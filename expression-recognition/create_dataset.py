@@ -9,11 +9,7 @@ custom_path = 'expression-dataset'
 if not os.path.exists(custom_path):
     os.makedirs(custom_path)
 
-# Download the latest version of the dataset
-dataset_path = kagglehub.dataset_download("noamsegal/affectnet-training-data")
+# Download the dataset directly to the custom path
+kagglehub.dataset_download("noamsegal/affectnet-training-data", path=custom_path)
 
-# Move the dataset to your custom path
-shutil.move(dataset_path, custom_path)
-
-# Print the new path where the dataset is located
-print("Dataset has been moved to:", custom_path)
+print("Dataset has been downloaded to:", custom_path)
