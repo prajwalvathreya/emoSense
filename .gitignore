@@ -176,4 +176,6 @@ cython_debug/
 
 /expression-recognition/expression-dataset
 
+/expression-recognition/expression-landmarks
+
 .DS_Store
