@@ -3,6 +3,11 @@ import shutil
 import os
 
 # Path to the dataset folder
+
+# check if expression-dataset folder exists
+if not os.path.exists('emoSense/expression-dataset'):
+    os.makedirs('emoSense/expression-dataset')
+
 custom_path = 'emoSense/expression-dataset'
 
 # Download the latest version of the dataset
