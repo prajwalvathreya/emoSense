@@ -174,4 +174,4 @@ cython_debug/
 
 /landmarks
 
-/expression-dataset
+/expression-recognition/expression-dataset
