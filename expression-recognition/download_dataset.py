@@ -2,8 +2,8 @@ import kagglehub
 import shutil
 import os
 
-# Specify your own path for the dataset
-custom_path = 'E:/Projects/EmoSense/emoSense/data'
+# Path to the dataset folder
+custom_path = 'emoSense/expression-dataset'
 
 # Download the latest version of the dataset
 dataset_path = kagglehub.dataset_download("noamsegal/affectnet-training-data")
