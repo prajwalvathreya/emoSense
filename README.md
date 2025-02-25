@@ -16,8 +16,8 @@ First, you'll need to install the required dependencies listed in `requirements.
     pip install -r requirements.txt
     ```
 
-## Step 2: Download Mediapipeline model
-```
+## Step 2: Download Mediapipe model
+```bash
 curl -o face_landmarker_v2_with_blendshapes.task -L https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
 ```
 
