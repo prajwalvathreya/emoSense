@@ -135,7 +135,7 @@ def extract_and_save_landmarks(dataset_path, output_path):
 # Example usage
 if __name__ == "__main__":
     # Update these paths
-    affectnet_path = "data\\3"
-    output_path = "landmarks"
+    affectnet_path = "expression-dataset"
+    output_path = "expression-landmarks"
     
     extract_and_save_landmarks(affectnet_path, output_path)
