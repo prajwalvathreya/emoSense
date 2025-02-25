@@ -1,0 +1,6 @@
+kagglehub
+mediapipe
+Pillow
+opencv-python
+numpy
+
