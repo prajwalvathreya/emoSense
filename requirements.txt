@@ -3,4 +3,9 @@ mediapipe
 Pillow
 opencv-python
 numpy
-
+pyaudio
+transformers
+librosa
+torch
+speechbrain
+torchaudio
