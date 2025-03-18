@@ -171,7 +171,10 @@ cython_debug/
 .pypirc
 
 /data
+final_data/
 
 /landmarks
 .qodo
 recordings/
+
+best_fer_model.h5
