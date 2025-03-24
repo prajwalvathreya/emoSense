@@ -178,3 +178,6 @@ final_data/
 recordings/
 
 best_fer_model.h5
+
+.DS_Store
+expression-recognition/expression-dataset
