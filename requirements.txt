@@ -9,3 +9,5 @@ librosa
 torch
 speechbrain
 torchaudio
+streamlit
+streamlit-webrtc
