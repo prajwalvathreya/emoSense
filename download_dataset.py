@@ -3,11 +3,10 @@ import shutil
 import os
 
 # Specify your own path for the dataset
-custom_path = 'E:/Projects/EmoSense/emoSense/final_data'
+custom_path = 'E:/Projects/EmoSense/emoSense/data'
 
 # Download the latest version of the dataset
-# dataset_path = kagglehub.dataset_download("noamsegal/affectnet-training-data")
-dataset_path = kagglehub.dataset_download("ananthu017/emotion-detection-fer")
+dataset_path = kagglehub.dataset_download("noamsegal/affectnet-training-data")
 
 # Move the dataset to your custom path
 if not os.path.exists(custom_path):
