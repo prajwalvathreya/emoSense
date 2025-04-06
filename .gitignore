@@ -181,3 +181,8 @@ recordings/
 /expression-recognition/expression-landmarks
 
 .DS_Store
+
+recordings/
+.qodo
+
+final_data/
