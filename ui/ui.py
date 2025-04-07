@@ -1,12 +1,11 @@
 import streamlit as st
 import cv2
 import time
-import threading
 from emotion_prediction import predict_emotion
 from tensorflow.keras.models import load_model
 from collections import defaultdict
 
-model = load_model('../expression-recognition/best_fer_model.h5')
+# model = load_model('../expression-recognition/best_fer_model.h5')
 
 # Set page configuration
 st.set_page_config(
@@ -128,10 +127,8 @@ def analyze_facial_emotion(model, images):
 
     # Average the confidence scores
     averaged_emotions = {emotion: score / count for emotion, score in emotion_totals.items()}
-    print("All emotions got: ",averaged_emotions)
-    # Get the dominant emotion
-    dominant_emotion = max(averaged_emotions, key=averaged_emotions.get)
-    return {dominant_emotion: averaged_emotions[dominant_emotion]}
+
+    return averaged_emotions
 
 # Placeholder function for voice emotion recognition
 def record_and_analyze_voice():
@@ -216,11 +213,11 @@ with col2:
 
     # Display facial emotion results
     if st.session_state.facial_emotion:
-        dominant_emotion = st.session_state.facial_emotion
+        dominant_emotion = max(st.session_state.facial_emotion, key=st.session_state.facial_emotion.get)
         facial_result_placeholder.markdown(f"<p class='emotion-result'>Dominant: {dominant_emotion}</p>", unsafe_allow_html=True)
 
         # Sort emotions by confidence and get top 3
-        top_emotions = dict(sorted(facial_emotions.items(), key=lambda x: x[1], reverse=True)[:3])
+        top_emotions = dict(sorted(st.session_state.facial_emotion.items(), key=lambda x: x[1], reverse=True)[:3])
 
         # Display confidence bars for top 3 emotions
         for emotion, confidence in top_emotions.items():
@@ -281,6 +278,12 @@ with col2:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
+@st.cache_resource  # Efficient model caching
+def load_emotion_model():
+    return load_model('../expression-recognition/best_fer_model.h5')
+
+model = load_emotion_model()
+
 # Main app logic
 cap = cv2.VideoCapture(0)
 
@@ -328,6 +331,8 @@ while True:
 
             # Clear buffer after analysis
             st.session_state.frame_buffer = []
+
+            st.rerun()
 
     # Short delay to reduce CPU usage
     time.sleep(0.1)
