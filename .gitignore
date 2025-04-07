@@ -179,3 +179,7 @@ cython_debug/
 /expression-recognition/expression-landmarks
 
 .DS_Store
+
+/final_data
+
+/recordings
