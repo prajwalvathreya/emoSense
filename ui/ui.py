@@ -148,7 +148,7 @@ col1, col2 = st.columns([3, 2])
 
 # Left column for video feed and controls
 with col1:
-    st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
+    # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
     st.markdown("### Live Camera Feed")
     
     # Placeholder for the webcam feed
@@ -185,7 +185,7 @@ with col1:
 # Right column for emotion results
 with col2:
     # Facial emotion results
-    st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
+    # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
     st.markdown("### Facial Emotion Analysis")
     facial_result_placeholder = st.empty()
 
@@ -214,7 +214,7 @@ with col2:
     st.markdown("</div>", unsafe_allow_html=True)
     
     # Voice emotion results
-    st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
+    # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
     st.markdown("### Voice Emotion Analysis")
     voice_result_placeholder = st.empty()
     
@@ -241,7 +241,7 @@ with col2:
     
     # Combined insight
     if st.session_state.facial_emotion and st.session_state.voice_emotion:
-        st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
+        # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
         st.markdown("### Emotional Alignment")
         
         facial_dominant = max(st.session_state.facial_emotion, key=st.session_state.facial_emotion.get)

@@ -64,6 +64,6 @@ def predict_emotion(model, image):
 
 # Example usage
 if __name__ == "__main__":
-    model = load_model('best_fer_model.h5')
+    model = load_model('../expression-recognition/best_fer_model.h5')
     result = predict_emotion(model, "final_data/1/train/fearful/im5.png")
     print(result["emotion"])
