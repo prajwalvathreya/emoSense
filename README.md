@@ -54,5 +54,10 @@ Finally, run the `view_failed.py` script. This script will analyze and display a
     ```bash
     python view_failed.py
     ```
-
 This will display any failed items or errors for you to review.
+
+## Step 6: Predict Model
+
+Use the better_model.ipynb to train the model and predict the expression. (It took me around 4hrs to train 100 epochs)
+
+Model reference: https://www.kaggle.com/code/phngngctrungkin/emotion-recognition-lordofdeadline/notebook
