@@ -1,6 +1,8 @@
 import streamlit as st
 import cv2
 import time
+import pyaudio
+import numpy as np
 from expression_recognition.emotion_prediction import predict_emotion
 from speech_recognition_models.openai_whisper import predict_emotion_from_audio
 from speech_recognition_models.record_voice import record_audio
@@ -142,7 +144,7 @@ def record_and_analyze_voice(recording):
 
     prediction = predict_emotion_from_audio(recording)
 
-    return prediction
+    return prediction["all_probabilities"]
 
 def stop_recording():
     st.session_state.is_recording = False
@@ -276,6 +278,21 @@ def load_emotion_model():
 
 model = load_emotion_model()
 
+p = pyaudio.PyAudio()
+
+FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
+CHANNELS = 1              # Mono audio
+RATE = 44100              # Sample rate (44.1 kHz)
+CHUNK = 1024  
+
+stream = p.open(format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                input=True,
+                frames_per_buffer=CHUNK)
+
+frames = []
+
 # Main app logic
 cap = cv2.VideoCapture(0)
 
@@ -305,7 +322,8 @@ while True:
         st.session_state.frame_buffer.append(frame_rgb.copy())
 
         # Record audio
-        recording = record_audio()
+        data = stream.read(CHUNK)
+        frames.append(data)
 
         # Check if 10 seconds have passed
         if elapsed % 10 < 0.5 and (st.session_state.capture_count == 0 or elapsed // 10 > st.session_state.capture_count):
@@ -320,9 +338,22 @@ while True:
             # Analyze all captured frames for facial emotion
             st.session_state.facial_emotion = analyze_facial_emotion(model, st.session_state.frame_buffer)
             print("Facial Emotion Analysis Completed", st.session_state.facial_emotion)
-
+            
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+            recording = np.frombuffer(b''.join(frames), dtype=np.int16)
+            
             # Analyze voice emotion
-            st.session_state.voice_emotion = record_and_analyze_voice()
+            st.session_state.voice_emotion = record_and_analyze_voice(recording)
+
+            stream = p.open(format=FORMAT,
+                        channels=CHANNELS,
+                        rate=RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
+
+            frames = []
 
             # Clear buffer after analysis
             st.session_state.frame_buffer = []

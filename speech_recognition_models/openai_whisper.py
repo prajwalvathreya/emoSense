@@ -28,31 +28,44 @@ def preprocess_audio(audio_array, feature_extractor, max_duration=30.0):
     )
     return inputs
 
+
 def predict_emotion_from_audio(audio_array, model=model, feature_extractor=feature_extractor, id2label=id2label, max_duration=30.0):
+    # Preprocess the audio data
     inputs = preprocess_audio(audio_array, feature_extractor, max_duration)
 
+    # Determine the device to use (GPU if available, otherwise CPU)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     inputs = {key: value.to(device) for key, value in inputs.items()}
 
+    # Disable gradient calculations for inference
     with torch.no_grad():
         outputs = model(**inputs)
 
     logits = outputs.logits
 
+    # Get the probabilities using softmax
     probs = F.softmax(logits, dim=-1)
 
+    # Create a dictionary of emotion probabilities
     emotion_probs = {id2label[i]: probs[0][i].item() for i in range(len(id2label))}
 
-    for emotion, prob in sorted(emotion_probs.items(), key=lambda x: x[1], reverse=True):
-        print(f"{emotion}: {prob:.4f}")
+    # Sort emotions based on probability (highest to lowest)
+    sorted_emotions = sorted(emotion_probs.items(), key=lambda x: x[1], reverse=True)
 
+    # Get the predicted emotion and its confidence
     predicted_id = torch.argmax(logits, dim=-1).item()
-    predicted_label = id2label[predicted_id]
+    predicted_emotion = id2label[predicted_id]
+    confidence = probs[0][predicted_id].item() * 100  # Convert to percentage
 
-    return predicted_label
+    # Prepare the output dictionary
+    result = {
+        "emotion": predicted_emotion,
+        "confidence": f"{confidence:.2f}%",
+        "all_probabilities": {emotion: round(prob, 2) for emotion, prob in sorted_emotions}
+    }
 
-audio_array = record_audio()
+    print(f"Predicted Emotion: {result}")
 
-predicted_emotion = predict_emotion(audio_array, model, feature_extractor, id2label)
-print(f"Predicted Emotion: {predicted_emotion}")
+    return result
+
