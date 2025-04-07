@@ -1,4 +1,3 @@
-from os import pread
 import cv2
 import numpy as np
 import tensorflow as tf
