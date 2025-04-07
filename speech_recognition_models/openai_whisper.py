@@ -1,5 +1,4 @@
-from transformers import *
-import librosa
+from transformers import AutoModelForAudioClassification, AutoFeatureExtractor
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -13,7 +12,7 @@ id2label = model.config.id2label
 
 def preprocess_audio(audio_array, feature_extractor, max_duration=30.0):
     # audio_array, sampling_rate = librosa.load(audio_path, sr=feature_extractor.sampling_rate)
-    
+
     max_length = int(feature_extractor.sampling_rate * max_duration)
     if len(audio_array) > max_length:
         audio_array = audio_array[:max_length]
@@ -29,9 +28,9 @@ def preprocess_audio(audio_array, feature_extractor, max_duration=30.0):
     )
     return inputs
 
-def predict_emotion(audio_array, model, feature_extractor, id2label, max_duration=30.0):
+def predict_emotion_from_audio(audio_array, model=model, feature_extractor=feature_extractor, id2label=id2label, max_duration=30.0):
     inputs = preprocess_audio(audio_array, feature_extractor, max_duration)
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     inputs = {key: value.to(device) for key, value in inputs.items()}
@@ -50,7 +49,7 @@ def predict_emotion(audio_array, model, feature_extractor, id2label, max_duratio
 
     predicted_id = torch.argmax(logits, dim=-1).item()
     predicted_label = id2label[predicted_id]
-    
+
     return predicted_label
 
 audio_array = record_audio()

@@ -1,11 +1,11 @@
 import streamlit as st
 import cv2
 import time
-from emotion_prediction import predict_emotion
+from expression_recognition.emotion_prediction import predict_emotion
+from speech_recognition_models.openai_whisper import predict_emotion_from_audio
+from speech_recognition_models.record_voice import record_audio
 from tensorflow.keras.models import load_model
 from collections import defaultdict
-
-# model = load_model('../expression-recognition/best_fer_model.h5')
 
 # Set page configuration
 st.set_page_config(
@@ -131,7 +131,7 @@ def analyze_facial_emotion(model, images):
     return averaged_emotions
 
 # Placeholder function for voice emotion recognition
-def record_and_analyze_voice():
+def record_and_analyze_voice(recording):
     """
     Placeholder function for voice recording and emotion analysis.
     Replace with your actual implementation.
@@ -139,18 +139,10 @@ def record_and_analyze_voice():
     Returns:
         dict: A dictionary with emotion labels as keys and confidence scores as values
     """
-    # Simulate recording delay
-    # time.sleep(3)
 
-    # Placeholder: Return random emotions with confidence scores
-    emotions = {
-        "Happy": 0.1,
-        "Sad": 0.05,
-        "Angry": 0.65,
-        "Surprised": 0.05,
-        "Neutral": 0.15
-    }
-    return emotions
+    prediction = predict_emotion_from_audio(recording)
+
+    return prediction
 
 def stop_recording():
     st.session_state.is_recording = False
@@ -280,7 +272,7 @@ with col2:
 
 @st.cache_resource  # Efficient model caching
 def load_emotion_model():
-    return load_model('../expression-recognition/best_fer_model.h5')
+    return load_model('expression_recognition/best_fer_model.h5')
 
 model = load_emotion_model()
 
@@ -311,6 +303,9 @@ while True:
 
         # Store current frame into buffer
         st.session_state.frame_buffer.append(frame_rgb.copy())
+
+        # Record audio
+        recording = record_audio()
 
         # Check if 10 seconds have passed
         if elapsed % 10 < 0.5 and (st.session_state.capture_count == 0 or elapsed // 10 > st.session_state.capture_count):
