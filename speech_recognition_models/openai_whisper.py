@@ -3,6 +3,7 @@ import librosa
 import torch
 import torch.nn.functional as F
 import numpy as np
+from record_voice import record_audio
 
 model_id = "firdhokk/speech-emotion-recognition-with-openai-whisper-large-v3"
 model = AutoModelForAudioClassification.from_pretrained(model_id)
@@ -10,8 +11,8 @@ model = AutoModelForAudioClassification.from_pretrained(model_id)
 feature_extractor = AutoFeatureExtractor.from_pretrained(model_id, do_normalize=True)
 id2label = model.config.id2label
 
-def preprocess_audio(audio_path, feature_extractor, max_duration=30.0):
-    audio_array, sampling_rate = librosa.load(audio_path, sr=feature_extractor.sampling_rate)
+def preprocess_audio(audio_array, feature_extractor, max_duration=30.0):
+    # audio_array, sampling_rate = librosa.load(audio_path, sr=feature_extractor.sampling_rate)
     
     max_length = int(feature_extractor.sampling_rate * max_duration)
     if len(audio_array) > max_length:
@@ -28,8 +29,8 @@ def preprocess_audio(audio_path, feature_extractor, max_duration=30.0):
     )
     return inputs
 
-def predict_emotion(audio_path, model, feature_extractor, id2label, max_duration=30.0):
-    inputs = preprocess_audio(audio_path, feature_extractor, max_duration)
+def predict_emotion(audio_array, model, feature_extractor, id2label, max_duration=30.0):
+    inputs = preprocess_audio(audio_array, feature_extractor, max_duration)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -52,7 +53,7 @@ def predict_emotion(audio_path, model, feature_extractor, id2label, max_duration
     
     return predicted_label
 
-audio_path = "../recordings/english_2025-03-09_15-09-21.wav"
+audio_array = record_audio()
 
-predicted_emotion = predict_emotion(audio_path, model, feature_extractor, id2label)
+predicted_emotion = predict_emotion(audio_array, model, feature_extractor, id2label)
 print(f"Predicted Emotion: {predicted_emotion}")
