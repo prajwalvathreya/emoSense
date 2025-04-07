@@ -19,4 +19,4 @@ def display_images_from_csv(csv_path):
         plt.show()
 
 # Call the function with the path to your CSV
-display_images_from_csv('landmarks/failed_detections.csv')
+display_images_from_csv('expression-landmarks/failed_detections.csv')

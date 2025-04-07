@@ -31,7 +31,7 @@ Once the dependencies are installed, the next step is to run the `create_dataset
     python create_dataset.py
     ```
 
-This will create the dataset and save it to the appropriate location (ensure that the script is configured correctly to point to the proper directory).
+This will create the dataset and save it to the appropriate location. **DO NOT** make changes to the already set path.
 
 ## Step 4: Create Landmarks
 
