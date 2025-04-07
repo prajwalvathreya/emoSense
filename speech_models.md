@@ -1,0 +1,4 @@
+- https://huggingface.co/r-f/wav2vec-english-speech-emotion-recognition (very bad)
+- https://huggingface.co/firdhokk/speech-emotion-recognition-with-openai-whisper-large-v3 (good)
+- https://huggingface.co/ehcalabres/wav2vec2-lg-xlsr-en-speech-emotion-recognition (Nah)
+- https://huggingface.co/speechbrain/emotion-recognition-wav2vec2-IEMOCAP (Didn't get to work)
