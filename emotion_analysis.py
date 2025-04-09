@@ -1,5 +1,6 @@
 import os
 from openai import OpenAI
+import json
 
 token = os.environ["GITHUB_TOKEN"]
 endpoint = "https://models.inference.ai.azure.com"
@@ -37,4 +38,4 @@ def compile_emotion(facial_emotion, audio_emotion):
         model=model_name
     )
 
-    return response.choices[0].message.content
+    return json.loads(response.choices[0].message.content)
