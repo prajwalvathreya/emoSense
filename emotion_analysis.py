@@ -1,5 +1,4 @@
 import os
-import json
 from openai import OpenAI
 
 token = os.environ["GITHUB_TOKEN"]
@@ -24,11 +23,8 @@ def compile_emotion(facial_emotion, audio_emotion):
     - Emotion probability distributions
     - Agreement/disagreement between the modalities
 
-    Return a JSON response like:
-    {{
-      "final_emotion": "<emotion>",
-      "confidence_explanation": "<brief explanation of confidence>"
-    }}
+    Return a tuple response like:
+      ["final_emotion", "<brief explanation of confidence>"]
     """
 
     response = client.chat.completions.create(
@@ -41,8 +37,4 @@ def compile_emotion(facial_emotion, audio_emotion):
         model=model_name
     )
 
-    try:
-        return json.loads(response.choices[0].message.content)
-    except json.JSONDecodeError:
-        # Optional fallback: return raw string if JSON parsing fails
-        return {"error": "Failed to parse response", "raw_response": response.choices[0].message.content}
+    return response.choices[0].message.content
