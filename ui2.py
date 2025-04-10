@@ -141,8 +141,6 @@ def analyze_facial_emotion(model, images):
 
     # Set the completion flag
     st.session_state.facial_analysis_complete = True
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@=============================")
-    print(averaged_emotions)
     return averaged_emotions
 
 # Placeholder function for voice emotion recognition
@@ -158,9 +156,6 @@ def record_and_analyze_voice(recording):
     prediction = predict_emotion_from_audio(recording)
     # Set the completion flag
     st.session_state.voice_analysis_complete = True
-
-    print("=============================@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print(prediction["all_probabilities"])
 
     return prediction["all_probabilities"]
 
@@ -241,9 +236,6 @@ with col2:
     # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
     st.markdown("### Facial Emotion Analysis")
     facial_result_placeholder = st.empty()
-
-    print("=============================")
-    print(st.session_state.facial_emotion)
 
     # Display facial emotion results
     if st.session_state.facial_emotion:
