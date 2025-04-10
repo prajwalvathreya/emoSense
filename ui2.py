@@ -8,6 +8,8 @@ from speech_recognition_models.openai_whisper import predict_emotion_from_audio
 from speech_recognition_models.record_voice import record_audio
 from tensorflow.keras.models import load_model
 from collections import defaultdict
+import threading
+import concurrent.futures
 from emotion_analysis import compile_emotion
 
 # Set page configuration
@@ -90,6 +92,12 @@ if 'capture_count' not in st.session_state:
     st.session_state.capture_count = 0
 if 'is_recording' not in st.session_state:
     st.session_state.is_recording = False
+if 'facial_analysis_complete' not in st.session_state:
+    st.session_state.facial_analysis_complete = False
+if 'voice_analysis_complete' not in st.session_state:
+    st.session_state.voice_analysis_complete = False
+if 'analysis_executor' not in st.session_state:
+    st.session_state.analysis_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
 def analyze_facial_emotion(model, images):
     """
@@ -131,6 +139,10 @@ def analyze_facial_emotion(model, images):
     # Average the confidence scores
     averaged_emotions = {emotion: score / count for emotion, score in emotion_totals.items()}
 
+    # Set the completion flag
+    st.session_state.facial_analysis_complete = True
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@=============================")
+    print(averaged_emotions)
     return averaged_emotions
 
 # Placeholder function for voice emotion recognition
@@ -144,6 +156,11 @@ def record_and_analyze_voice(recording):
     """
 
     prediction = predict_emotion_from_audio(recording)
+    # Set the completion flag
+    st.session_state.voice_analysis_complete = True
+
+    print("=============================@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    print(prediction["all_probabilities"])
 
     return prediction["all_probabilities"]
 
@@ -156,6 +173,28 @@ def start_analysis():
         st.session_state.is_running = True
         st.session_state.start_time = time.time()
         st.session_state.is_recording = True
+        st.session_state.facial_analysis_complete = False
+        st.session_state.voice_analysis_complete = False
+
+def facial_analysis_task(model, frame_buffer):
+    """Wrapper function for facial analysis to be run in a separate thread"""
+    result = analyze_facial_emotion(model, frame_buffer)
+    st.session_state.facial_emotion = result
+    return result
+
+def voice_analysis_task(audio_data):
+    """Wrapper function for voice analysis to be run in a separate thread"""
+    result = record_and_analyze_voice(audio_data)
+    st.session_state.voice_emotion = result
+    return result
+
+def check_analysis_completion():
+    """Check if both analyses are complete and trigger a rerun if needed"""
+    if st.session_state.facial_analysis_complete and st.session_state.voice_analysis_complete:
+        # Reset completion flags for next cycle
+        st.session_state.facial_analysis_complete = False
+        st.session_state.voice_analysis_complete = False
+        st.rerun()
 
 # Create two columns for the main layout
 col1, col2 = st.columns([3, 2])
@@ -202,6 +241,9 @@ with col2:
     # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
     st.markdown("### Facial Emotion Analysis")
     facial_result_placeholder = st.empty()
+
+    print("=============================")
+    print(st.session_state.facial_emotion)
 
     # Display facial emotion results
     if st.session_state.facial_emotion:
@@ -254,21 +296,20 @@ with col2:
         # st.markdown("<div class='emotion-card'>", unsafe_allow_html=True)
         st.markdown("### Emotional Alignment")
 
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(st.session_state.facial_emotion)
-        print("+++++++++++++++++++++++++")
-        print(st.session_state.voice_emotion)
-
         # Determine dominant emotions and confidence
         compiled_emotion = compile_emotion(st.session_state.facial_emotion, st.session_state.voice_emotion)
-        print("Compiled Emotion: ", compiled_emotion[0])
-        st.success(f"{compiled_emotion[1]}")
-        # if facial_dominant == voice_dominant:
-        #     st.success(f"Match: Both face and voice indicate **{facial_dominant}** "
-        #                f"(Facial avg: {facial_conf:.2f}, Voice: {voice_conf:.2f})")
-        # else:
-        #     st.warning(f"Mismatch: Face shows **{facial_dominant}** (avg: {facial_conf:.2f}) "
-        #                f"while voice indicates **{voice_dominant}** (conf: {voice_conf:.2f})")
+        # print("Compiled Emotion: ", compiled_emotion[0])
+        # st.success(f"{compiled_emotion[1]}")
+        with st.container():
+            st.markdown(
+                f"""
+                <div style="padding: 10px; margin-bottom: 10px; border-left: 5px solid #4A90E2; background-color: #f9f9f9; border-radius: 5px;">
+                    <h4 style="margin: 0; color: #333;">{compiled_emotion[0]}</h4>
+                    <p style="margin: 5px 0 0; color: #555;">{compiled_emotion[1]}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -327,37 +368,55 @@ while True:
 
         # Check if 10 seconds have passed
         if elapsed % 10 < 0.5 and (st.session_state.capture_count == 0 or elapsed // 10 > st.session_state.capture_count):
-
             print("10 seconds passed. Running Analysis...")
             # Update capture count
             st.session_state.capture_count = elapsed // 10
 
             # Store the last frame (optional, for UI or fallback)
             st.session_state.last_image = st.session_state.frame_buffer[-1]
-
-            # Analyze all captured frames for facial emotion
-            st.session_state.facial_emotion = analyze_facial_emotion(model, st.session_state.frame_buffer)
             
+            # Prepare audio data for analysis
             stream.stop_stream()
             stream.close()
             p.terminate()
             recording = np.frombuffer(b''.join(frames), dtype=np.int16)
             
-            # Analyze voice emotion
-            st.session_state.voice_emotion = record_and_analyze_voice(recording)
-
-            stream = p.open(format=FORMAT,
-                        channels=CHANNELS,
-                        rate=RATE,
-                        input=True,
-                        frames_per_buffer=CHUNK)
-
-            frames = []
-
-            # Clear buffer after analysis
-            st.session_state.frame_buffer = []
-
-            st.rerun()
+            # Make a copy of the frame buffer for analysis
+            frame_buffer_copy = st.session_state.frame_buffer.copy()
+            
+            # Submit both tasks to the executor for parallel processing
+            facial_future = st.session_state.analysis_executor.submit(
+                facial_analysis_task, model, frame_buffer_copy
+            )
+            
+            voice_future = st.session_state.analysis_executor.submit(
+                voice_analysis_task, recording
+            )
+            
+            # Wait for both futures to complete (with timeout)
+            concurrent.futures.wait([facial_future, voice_future], timeout=30)
+            
+            # Get results (this will block until complete)
+            try:
+                st.session_state.facial_emotion = facial_future.result(timeout=1)
+                st.session_state.voice_emotion = voice_future.result(timeout=1)
+                
+                # Reset audio recording
+                p = pyaudio.PyAudio()
+                stream = p.open(format=FORMAT,
+                            channels=CHANNELS,
+                            rate=RATE,
+                            input=True,
+                            frames_per_buffer=CHUNK)
+                frames = []
+                
+                # Clear buffer after analysis
+                st.session_state.frame_buffer = []
+                
+                # Trigger rerun to update UI
+                st.rerun()
+            except Exception as e:
+                print(f"Error getting results: {e}")
 
     # Short delay to reduce CPU usage
     time.sleep(0.1)
@@ -368,3 +427,10 @@ while True:
 
 # Release webcam on app close
 cap.release()
+if 'stream' in locals() and stream is not None:
+    stream.stop_stream()
+    stream.close()
+if 'p' in locals() and p is not None:
+    p.terminate()
+if 'analysis_executor' in st.session_state:
+    st.session_state.analysis_executor.shutdown(wait=False)

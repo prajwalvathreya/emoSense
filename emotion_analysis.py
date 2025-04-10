@@ -13,16 +13,17 @@ client = OpenAI(
 
 def compile_emotion(facial_emotion, audio_emotion):
     context_prompt = f"""
-    You are an emotion analysis assistant.
+    You are an emotion analysis assistant. You are given data about a person's facial expression analysis
+    and a speaker's (different person) voice analysis. The voice analysis is a context of the facial expression.
+
+    Your task is to analyze both sources and provide a final emotion judgment of the person by considering:
+    - Confidence levels
+    - Emotion probability distributions
+    - Agreement/disagreement between the modalities
 
     Here is data from two modalities:
     1. Facial Expression Analysis: {facial_emotion}
     2. Audio Voice Analysis: {audio_emotion}
-
-    Your task is to analyze both sources and provide a final emotion judgment by considering:
-    - Confidence levels
-    - Emotion probability distributions
-    - Agreement/disagreement between the modalities
 
     Return a tuple response like:
       ["final_emotion", "<brief explanation of confidence>"]
